@@ -104,12 +104,41 @@ async function index(url: string) {
         //, { end: argv['limit-bytes'] ? argv['limit-bytes'] : undefined }
     ).pipe(csvStream)
 
+    const indexRecords = async (): Promise<void | any[]> => {
+        const operations = arr.flatMap(doc => [{
+            create: {
+                _index,
+                _id: argv['id'] ? doc[argv['id']] : undefined
+            }
+        }, doc])
+
+        if (argv['verbose'])
+            console.log(operations)
+
+        return client.bulk({
+            refresh: true,
+            body: operations
+        })
+            .then((response) => {
+                console.log(`Indexed ${idx} records:`,
+                    response.statusCode === 200 ? 'Success' : response
+                )
+                return {
+                    response
+                }
+            })
+            .then(({ response }) => new Promise(resolve => setTimeout(() => resolve(response), 5000)))
+            .then(() => arr.splice(0, arr.length))
+            .catch(err => console.error(err))
+    }
+
+
     let cancelled = false
     readable
-        .on('error', function(err) {
+        .on('error', (err) => {
             console.error(err);
         })
-        .on('header', function(columns) {
+        .on('header', (columns) => {
             console.log('Columns', columns);
         })
         .on('data', (data: any) => {
@@ -118,38 +147,15 @@ async function index(url: string) {
             arr.push(data)
             if ((++idx % 4096) === 0) {
                 readable.pause();
-                const operations = arr.flatMap(doc => [{
-                    create: {
-                        _index,
-                        _id: argv['id'] ? doc[argv['id']] : undefined
-                    }
-                }, doc])
-
-                if (argv['verbose'])
-                    console.log(operations)
-
-                return client.bulk({
-                    refresh: true,
-                    body: operations
-                })
-                    .then((response) => {
-                        console.log(`Indexed ${idx} records:`,
-                            response.statusCode === 200 ? 'Success' : response
-                        )
-                        return {
-                            response
-                        }
-                    })
-                    .then(({ response }) => new Promise(resolve => setTimeout(() => resolve(response), 5000)))
-                    .then(() => arr.splice(0, arr.length))
-                    .catch(err => console.error(err))
+                indexRecords()
                     .then(() => readable.resume())
             } else {
                 //readable.resume()
             }
         })
         .on('end', () => {
-            console.log(`Stream ended at ${idx} position`)
+            console.log(`Stream ended at ${idx} line position`)
+            indexRecords()
         })
 }
 async function search(_index: string) {
