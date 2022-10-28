@@ -9,6 +9,11 @@ const argv = yargs
             description: 'Node URL',
             type: 'string',
         },
+        'delete-index': {
+            description: 'Deleting index',
+            type: 'boolean',
+            default: false
+        }
         'doc': {
             description: 'Path to CSV document to index',
             type: 'string'
@@ -96,13 +101,19 @@ async function index(url: string) {
         enclosedChar: argv["enclosedChar"], // default is an empty string
     }
 
+    if (argv['delete-index']) {
+        console.log('Deleting index', _index);
+        await client.indices.delete({ index: _index }).then(console.log).catch(console.error)
+    }
+
     console.log(options)
     const csvStream = csv.createStream(options)
     let idx = 0, arr = []
 
     const readable = fs.createReadStream(url
-        //, { end: argv['limit-bytes'] ? argv['limit-bytes'] : undefined }
+        , { end: argv['limit-bytes'] ? argv['limit-bytes'] : undefined }
     ).pipe(csvStream)
+
 
     const indexRecords = async (): Promise<void | any[]> => {
         const operations = arr.flatMap(doc => [{
@@ -135,10 +146,10 @@ async function index(url: string) {
 
     let cancelled = false
     readable
-        .on('error', (err) => {
+        .on('error', (err: any) => {
             console.error(err);
         })
-        .on('header', (columns) => {
+        .on('header', (columns: any[]) => {
             console.log('Columns', columns);
         })
         .on('data', (data: any) => {
