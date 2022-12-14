@@ -13,7 +13,7 @@ const argv = yargs
             description: 'Deleting index',
             type: 'boolean',
             default: false
-        }
+        },
         'doc': {
             description: 'Path to CSV document to index',
             type: 'string'
