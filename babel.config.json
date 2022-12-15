@@ -1,0 +1,17 @@
+{
+    "presets": [
+      ["@babel/preset-env", {"targets": {node: "current"}}],
+      "@babel/preset-typescript"
+    ],
+    "plugins": [
+        "@babel/plugin-transform-spread",
+        "@babel/plugin-syntax-dynamic-import",
+        "dynamic-import-node",
+        "transform-class-properties",
+        "@babel/syntax-class-properties",
+        "babel-plugin-transform-es2015-destructuring",
+        ["babel-plugin-parameter-decorator", {"legacy": true}],
+        ["@babel/plugin-proposal-decorators", {"legacy": true}],
+        ["@babel/proposal-class-properties", {"loose": true}],
+    ],
+}

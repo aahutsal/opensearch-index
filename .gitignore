@@ -1,0 +1,10 @@
+*.~undo-tree~
+/build/
+/1/
+/.log/
+/MyRootCA.key
+/MyRootCA.pem
+/yarn.lock
+/package-lock.json
+/node_modules/
+*.log
