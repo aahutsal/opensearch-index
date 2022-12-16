@@ -77,13 +77,13 @@ const argv = yargs
 
 const node = argv['node']
 const ssl = {
-    ca: fs.readFileSync('./root-ca.pem')
+    //ca: fs.readFileSync('./root-ca.pem')
+    rejectUnauthorized: false
 }
 // Initialize the client.
 const client = new Client({
     node,
-    //ssl,
-    rejectUnauthorized: false,
+    ssl,
     suggestCompression: true
 })
 
@@ -174,31 +174,5 @@ async function index(url: string) {
             indexRecords()
         })
 }
-async function search(_index: string) {
-    // Create an index.
-    var index_name = _index;
-
-    var response = await client.indices.create({
-        index: index_name,
-    });
-
-    console.log("Creating index:");
-    console.log(response.body);
-
-    // Add a document to the index.
-    var document = {
-        "title": "Moneyball",
-        "director": "Bennett Miller",
-        "year": "2011"
-    };
-
-    var response = await client.index({
-        index: index_name,
-        body: document
-    });
-
-    console.log(response.body);
-}
-
 index(argv['doc']).then(console.log)
 
