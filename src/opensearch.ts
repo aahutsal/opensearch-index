@@ -82,7 +82,8 @@ const ssl = {
 // Initialize the client.
 const client = new Client({
     node,
-    ssl,
+    //ssl,
+    rejectUnauthorized: false,
     suggestCompression: true
 })
 
