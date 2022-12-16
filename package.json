@@ -11,7 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-opensearch": "^3.183.0",
     "@aws-sdk/node-config-provider": "^3.178.0",
-    "@opensearch-project/opensearch": "^2.0.0",
+    "@opensearch-project/opensearch": "^2.1.0",
     "@types/ndjson": "^2.0.1",
     "@types/url-parse": "^1.4.8",
     "aws4": "^1.11.0",

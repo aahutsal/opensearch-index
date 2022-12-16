@@ -76,9 +76,13 @@ const argv = yargs
     .alias('help', 'h').argv;
 
 const node = argv['node']
+const ssl = {
+    ca: fs.readFileSync('./root-ca.pem')
+}
 // Initialize the client.
 const client = new Client({
     node,
+    ssl,
     suggestCompression: true
 })
 
