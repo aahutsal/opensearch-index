@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { Client, Connection } from '@opensearch-project/opensearch'
+import { Client } from '@opensearch-project/opensearch'
 import yargs from 'yargs'
 import * as csv from 'csv-stream'
 
@@ -26,6 +26,11 @@ const argv = yargs
             description: 'Limiting processing to N bytes',
             type: 'number',
             default: 0
+        },
+        'bulk-size': {
+            description: 'Number of items in bulk',
+            type: 'number',
+            default: 4096
         },
         'index-name': {
             description: 'Name of the index',
@@ -143,7 +148,7 @@ async function index(url: string) {
                     response
                 }
             })
-            .then(({ response }) => new Promise(resolve => setTimeout(() => resolve(response), 5000)))
+            //.then(({ response }) => new Promise(resolve => setTimeout(() => resolve(response), 5000)))
             .then(() => arr.splice(0, arr.length))
             .catch(err => console.error(err))
     }
@@ -157,21 +162,23 @@ async function index(url: string) {
         .on('header', (columns: any[]) => {
             console.log('Columns', columns);
         })
-        .on('data', (data: any) => {
+        .on('data', async (data: any) => {
             if (cancelled) return
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             arr.push(data)
-            if ((++idx % 4096) === 0) {
+            if ((++idx % argv['bulk-size']) === 0) {
                 readable.pause();
-                indexRecords()
+                await indexRecords()
                     .then(() => readable.resume())
             } else {
                 //readable.resume()
             }
         })
-        .on('end', () => {
+        .on('end', async () => {
             console.log(`Stream ended at ${idx} line position`)
-            indexRecords()
+            return await indexRecords()
+                .then(() => console.log('Final records indexed'))
+                .then(() => client.close())
         })
 }
 index(argv['doc']).then(console.log)
